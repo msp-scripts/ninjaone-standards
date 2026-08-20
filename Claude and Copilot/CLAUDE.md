@@ -32,6 +32,10 @@ The `ninjaone-expert` agent consolidates all seven skill domains into a single e
 - **Model:** Sonnet
 - **Memory:** Persistent at `.claude/agent-memory-local/ninjaone-expert/`
 
+A Copilot-format equivalent lives at `.github/agents/ninjaone-expert.agent.md`. It is a lean
+router that delegates to the same seven skills — keep the two in sync when skill coverage
+changes.
+
 Invoke for any multi-domain NinjaOne question (e.g., read a dropdown field and write WYSIWYG output).
 
 ## Key Scripting Conventions
