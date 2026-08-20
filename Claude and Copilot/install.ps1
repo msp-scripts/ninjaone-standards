@@ -21,6 +21,12 @@
 .PARAMETER Path
     Root of the target repository. Required for Project scope, ignored for Personal.
 
+.PARAMETER IncludeInstructions
+    Also install the PowerShell instructions file under Personal scope. Off by default:
+    the file's applyTo is '**/*.ps1', so installing it globally would apply NinjaOne
+    guidance to every PowerShell file you edit, not just NinjaOne scripts. Project scope
+    always installs it, because there the repository defines the scope.
+
 .EXAMPLE
     .\install.ps1 -Scope Project -Path C:\repos\NinjaOne-Scripts
 
@@ -44,7 +50,9 @@ param(
     [ValidateSet('Project', 'Personal')]
     [string]$Scope = 'Project',
 
-    [string]$Path
+    [string]$Path,
+
+    [switch]$IncludeInstructions
 )
 
 $ErrorActionPreference = 'Stop'
@@ -123,8 +131,13 @@ try {
             Copy-Payload -Source $skillSource -Destination (Join-Path $target '.copilot\skills') -Contents
             Copy-Payload -Source (Join-Path $packRoot '.github\agents\ninjaone-expert.agent.md') `
                 -Destination (Join-Path $target '.copilot\agents\ninjaone-expert.agent.md')
-            Copy-Payload -Source (Join-Path $packRoot '.github\instructions\ninjaone-scripting-guidelines.instructions.md') `
-                -Destination (Join-Path $target '.copilot\instructions\ninjaone-scripting-guidelines.instructions.md')
+            if ($IncludeInstructions) {
+                Copy-Payload -Source (Join-Path $packRoot '.github\instructions\ninjaone-scripting-guidelines.instructions.md') `
+                    -Destination (Join-Path $target '.copilot\instructions\ninjaone-scripting-guidelines.instructions.md')
+            }
+            else {
+                Write-Host '  (skipped instructions file - applyTo is **/*.ps1; pass -IncludeInstructions to install globally)'
+            }
         }
     }
 

@@ -84,6 +84,11 @@ do both. Add `-WhatIf` to preview without writing anything.
 `-Tool` accepts `Copilot`, `Claude`, or `Both` (default). The script is idempotent, needs no
 administrator rights, and exits `0` on success, `2` on a bad `-Path`, `1` on a copy failure.
 
+Personal scope skips the instructions file by default. Its `applyTo` is `**/*.ps1`, so
+installing it globally would apply NinjaOne guidance to every PowerShell file you edit, not
+just NinjaOne scripts. Pass `-IncludeInstructions` if you want it anyway. Project scope always
+installs it, because there the repository already defines the scope.
+
 ### What lands where
 
 **Project scope** - commit these alongside your scripts:
@@ -103,7 +108,7 @@ administrator rights, and exits `0` on success, `2` on a bad `-Path`, `1` on a c
 |-----------|---------|-------------|
 | 7 skills | `~/.copilot/skills/` | `~/.claude/skills/` |
 | Expert agent | `~/.copilot/agents/ninjaone-expert.agent.md` | `~/.claude/agents/ninjaone-expert.md` |
-| Instructions | `~/.copilot/instructions/` | not applicable |
+| Instructions | `~/.copilot/instructions/` (opt in with `-IncludeInstructions`) | not applicable |
 
 On Windows, `~` is `C:\Users\<you>`. If a skill or agent of the same name exists in both
 scopes, the personal copy wins.
