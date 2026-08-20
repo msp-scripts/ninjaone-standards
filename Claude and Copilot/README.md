@@ -5,16 +5,17 @@ Code** the NinjaOne RMM platform: seven agent skills, an expert agent, and a Pow
 instructions file. Once installed, both tools give NinjaOne-aware suggestions, correct
 type-conversion helpers, working API patterns, and valid WYSIWYG formatting.
 
-The skills follow the [Agent Skills](https://agentskills.io) open standard, so the same
-files are loaded by Copilot CLI, Copilot in VS Code, and Claude Code without duplication.
+The skills follow the [Agent Skills](https://agentskills.io) open standard, so one set of
+files serves Copilot CLI, Copilot in VS Code, and Claude Code - there is a single source of
+truth in version control, and `install.ps1` places it wherever each tool looks.
 
 ---
 
 ## Contents
 
 ```
-.claude/
-  skills/                                           # Loaded by ALL THREE tools
+.github/
+  skills/                                           # Canonical skills
     ninjaone-api/SKILL.md                           # REST API v2
     ninjaone-environment-variables/SKILL.md         # $env:NINJA_* variables
     ninjaone-script-variables/SKILL.md              # Type conversion, ConvertTo-TypedValue
@@ -23,21 +24,29 @@ files are loaded by Copilot CLI, Copilot in VS Code, and Claude Code without dup
     ninjaone-wysiwyg/SKILL.md                       # HTML/CSS for WYSIWYG fields
     ninjaone-tags/SKILL.md                          # Device tagging
   agents/
-    ninjaone-expert.md                              # Expert agent - Claude Code format
-
-.github/
-  agents/
     ninjaone-expert.agent.md                        # Expert agent - Copilot format
   instructions/
     ninjaone-scripting-guidelines.instructions.md   # Auto-applied to *.ps1 / *.psm1
 
+.claude/
+  agents/
+    ninjaone-expert.md                              # Expert agent - Claude Code format
+
 CLAUDE.md                                           # Claude Code project instructions
+install.ps1                                         # Installer for both tools
 ```
 
-Agents are the one thing that is **not** portable: Claude Code reads `.claude/agents/*.md`,
-Copilot reads `.github/agents/*.agent.md`. Both files are shipped so the agent works in
-either tool. The Claude version is self-contained; the Copilot version is a lean router that
-delegates to the same seven skills.
+This is the pack's **source** layout, which is not identical to the installed layout. Two
+things are tool-specific:
+
+- **Skills.** Copilot CLI and Copilot in VS Code read `.github/skills/`, `.claude/skills/`,
+  and `.agents/skills/`. Claude Code reads `.claude/skills/` only. The canonical copies live
+  under `.github/skills/` alongside the agent and instructions; installing for Claude Code
+  copies them to `.claude/skills/` so there is one source of truth in version control rather
+  than two directories to keep in sync.
+- **Agents.** Claude Code reads `.claude/agents/*.md`; Copilot reads `.github/agents/*.agent.md`.
+  Both files ship. The Claude version is self-contained; the Copilot version is a lean router
+  that delegates to the same seven skills.
 
 ---
 
@@ -60,50 +69,51 @@ you use.
 
 ## Install
 
-Pick **project** scope to share the pack with everyone working in one repository, or
-**personal** scope to have it available in every repository you touch. You can do both.
+Run `install.ps1`. Pick **project** scope to share the pack with everyone working in one
+repository, or **personal** scope to have it available in every repository you touch. You can
+do both. Add `-WhatIf` to preview without writing anything.
 
-### Project scope - install into a scripting repository
+```powershell
+# Into a scripting repository, for both tools
+.\install.ps1 -Scope Project -Path C:\repos\NinjaOne-Scripts
 
-Copy `.claude/`, `.github/`, and (for Claude Code) `CLAUDE.md` into the root of your NinjaOne
-scripts repository, then commit them. That single copy covers all three tools:
+# Into your home directory, Copilot only
+.\install.ps1 -Scope Personal -Tool Copilot
+```
+
+`-Tool` accepts `Copilot`, `Claude`, or `Both` (default). The script is idempotent, needs no
+administrator rights, and exits `0` on success, `2` on a bad `-Path`, `1` on a copy failure.
+
+### What lands where
+
+**Project scope** - commit these alongside your scripts:
 
 | Component | Path in your repo | Picked up by |
 |-----------|-------------------|--------------|
-| 7 skills | `.claude/skills/` | Copilot CLI, Copilot in VS Code, Claude Code |
+| 7 skills | `.github/skills/` | Copilot CLI, Copilot in VS Code |
+| 7 skills | `.claude/skills/` | Claude Code |
 | Expert agent | `.github/agents/ninjaone-expert.agent.md` | Copilot CLI, Copilot in VS Code |
 | Expert agent | `.claude/agents/ninjaone-expert.md` | Claude Code |
 | Instructions | `.github/instructions/*.instructions.md` | Copilot CLI, Copilot in VS Code |
 | Project context | `CLAUDE.md` | Claude Code |
 
-> `.github/skills/` and `.agents/skills/` are equally valid project skill locations. This pack
-> uses `.claude/skills/` because it is the only one all three tools read.
+**Personal scope** - applies to every repository you open:
 
-### Personal scope - install once for every repository
-
-Copy the individual skill directories and the matching agent file into your home directory:
-
-| Component | Copilot CLI | Claude Code |
-|-----------|-------------|-------------|
-| 7 skills | `~/.copilot/skills/ninjaone-*/` | `~/.claude/skills/ninjaone-*/` |
+| Component | Copilot | Claude Code |
+|-----------|---------|-------------|
+| 7 skills | `~/.copilot/skills/` | `~/.claude/skills/` |
 | Expert agent | `~/.copilot/agents/ninjaone-expert.agent.md` | `~/.claude/agents/ninjaone-expert.md` |
 | Instructions | `~/.copilot/instructions/` | not applicable |
 
-Copy the skill directories themselves (`ninjaone-api/`, `ninjaone-tags/`, and so on), not the
-`skills/` folder that contains them. On Windows, `~` is `C:\Users\<you>`.
+On Windows, `~` is `C:\Users\<you>`. If a skill or agent of the same name exists in both
+scopes, the personal copy wins.
 
-```powershell
-# Personal install for Copilot CLI
-$src = ".\Claude and Copilot"
-Copy-Item "$src\.claude\skills\*" "$env:USERPROFILE\.copilot\skills\" -Recurse -Force
-Copy-Item "$src\.github\agents\ninjaone-expert.agent.md" "$env:USERPROFILE\.copilot\agents\" -Force
+### Installing by hand
 
-# Personal install for Claude Code
-Copy-Item "$src\.claude\skills\*" "$env:USERPROFILE\.claude\skills\" -Recurse -Force
-Copy-Item "$src\.claude\agents\ninjaone-expert.md" "$env:USERPROFILE\.claude\agents\" -Force
-```
-
-If a skill or agent of the same name exists in both scopes, the personal copy wins.
+If you would rather not run the script, copy `.github/` and, for Claude Code, `.claude/` plus
+`CLAUDE.md` into your repository root - then additionally copy the contents of
+`.github/skills/` into `.claude/skills/`, since Claude Code will not find them under
+`.github/`.
 
 ### Verify the install
 
@@ -186,7 +196,8 @@ Questions well-suited to the agent:
   template" when starting a new script. Both produce the same `ConvertTo-TypedValue`-based
   shape.
 - **Keep skills up to date** - when NinjaOne ships new platform features, update the relevant
-  `SKILL.md`. Every tool benefits immediately. Run `/skills reload` afterwards.
+  `SKILL.md` under `.github/skills/`, then re-run `install.ps1` to push it to the installed
+  locations. Run `/skills reload` afterwards.
 - **Scripts target Windows PowerShell 5.1** - NinjaOne runs them under 5.1 by default, so no
   ternary `? :` or null-coalescing `??` in generated code.
 - **Character limits to remember** - Text: 200 chars, MultiLine: 10,000, Secure: 200-10,000,

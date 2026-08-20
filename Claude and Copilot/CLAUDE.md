@@ -8,7 +8,11 @@ This file provides guidance to Claude Code when working in this repository.
 
 ## Skills
 
-All NinjaOne-specific knowledge lives in `.claude/skills/`. Invoke skills via the `Skill` tool by name.
+All NinjaOne-specific knowledge lives in skills. Invoke them via the `Skill` tool by name.
+
+> Claude Code discovers skills at `.claude/skills/` only. In this pack the canonical copies
+> live at `.github/skills/` so Copilot and Claude share one source — see the README install
+> step that copies them into `.claude/skills/`.
 
 | Skill | When to Use |
 |-------|-------------|
@@ -21,8 +25,8 @@ All NinjaOne-specific knowledge lives in `.claude/skills/`. Invoke skills via th
 | `ninjaone-tags` | Device tagging via PowerShell cmdlets and CLI |
 
 For API reference material (pagination helpers, device filter examples), see:
-- `.claude/skills/ninjaone-api/references/api-examples.md`
-- `.claude/skills/ninjaone-api/references/device-filters.md`
+- `<skills>/ninjaone-api/references/api-examples.md`
+- `<skills>/ninjaone-api/references/device-filters.md`
 
 ## NinjaOne Expert Agent
 

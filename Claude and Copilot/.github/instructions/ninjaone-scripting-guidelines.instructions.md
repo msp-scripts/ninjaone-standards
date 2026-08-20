@@ -9,16 +9,17 @@ This guide provides NinjaOne RMM platform-specific instructions for GitHub Copil
 
 ## Related Skills
 
-This instruction set works with the following specialized skill files located in `.claude/skills/`.
-To load a skill in GitHub Copilot chat, use `#file:.claude/skills/<skill-name>/SKILL.md`.
+Seven NinjaOne skills accompany this instruction set. They load automatically when a request
+matches their description, so there is no need to attach or reference the files by path. Name
+one explicitly (for example, "use the ninjaone-wysiwyg skill") to force it.
 
-- **ninjaone-api** (`#file:.claude/skills/ninjaone-api/SKILL.md`) - REST API v2 for automation, integration, and data retrieval via HTTP requests
-- **ninjaone-environment-variables** (`#file:.claude/skills/ninjaone-environment-variables/SKILL.md`) - NinjaOne agent environment variables and organization context
-- **ninjaone-script-variables** (`#file:.claude/skills/ninjaone-script-variables/SKILL.md`) - Script variables, preset parameters, and type conversion
-- **ninjaone-custom-fields** (`#file:.claude/skills/ninjaone-custom-fields/SKILL.md`) - Custom fields access via PowerShell module (Get-NinjaProperty, Set-NinjaProperty)
-- **ninjaone-cli** (`#file:.claude/skills/ninjaone-cli/SKILL.md`) - ninjarmm-cli tool usage and legacy PowerShell commands
-- **ninjaone-wysiwyg** (`#file:.claude/skills/ninjaone-wysiwyg/SKILL.md`) - WYSIWYG fields, HTML formatting, Bootstrap 5, Charts.css, and visual reporting
-- **ninjaone-tags** (`#file:.claude/skills/ninjaone-tags/SKILL.md`) - Device tagging operations via PowerShell cmdlets and CLI for classification and filtering
+- **ninjaone-api** - REST API v2 for automation, integration, and data retrieval via HTTP requests
+- **ninjaone-environment-variables** - NinjaOne agent environment variables and organization context
+- **ninjaone-script-variables** - Script variables, preset parameters, and type conversion
+- **ninjaone-custom-fields** - Custom fields access via PowerShell module (Get-NinjaProperty, Set-NinjaProperty)
+- **ninjaone-cli** - ninjarmm-cli tool usage and legacy PowerShell commands
+- **ninjaone-wysiwyg** - WYSIWYG fields, HTML formatting, Bootstrap 5, Charts.css, and visual reporting
+- **ninjaone-tags** - Device tagging operations via PowerShell cmdlets and CLI for classification and filtering
 
 ## Core NinjaOne Concepts
 
