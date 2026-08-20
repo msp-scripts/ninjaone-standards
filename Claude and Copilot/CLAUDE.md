@@ -28,7 +28,7 @@ For API reference material (pagination helpers, device filter examples), see:
 
 The `ninjaone-expert` agent consolidates all seven skill domains into a single expert persona.
 
-- **Location:** `.claude/skills/agents/ninjaone-expert.md`
+- **Location:** `.claude/agents/ninjaone-expert.md`
 - **Model:** Sonnet
 - **Memory:** Persistent at `.claude/agent-memory-local/ninjaone-expert/`
 

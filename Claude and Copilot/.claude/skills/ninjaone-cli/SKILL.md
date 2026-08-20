@@ -316,9 +316,13 @@ Ninja-Property-Options globaldropdown
 # 74a6ffda-708e-435a-86e3-40b67c4f981a=Option1
 # f1ba449c-fd34-49df-b878-af3877180d17=Option3
 
-# Find option GUID by option name
-Ninja-Property-Get globaldropdown | grep "Option1" | awk -F= '{print $1}'
-# Output: 74a6ffda-708e-435a-86e3-40b67c4f981a
+# Find option GUID by option name (PowerShell-native; `options` returns GUID=Name lines)
+$guid = Ninja-Property-Options globaldropdown |
+    Where-Object { ($_ -split '=', 2)[1] -eq 'Option1' } |
+    ForEach-Object { ($_ -split '=', 2)[0] }
+# $guid: 74a6ffda-708e-435a-86e3-40b67c4f981a
+#
+# Note: split with a count of 2 so option names containing '=' are preserved.
 
 # Get value for dropdown field
 Ninja-Property-Get globaldropdown
@@ -516,9 +520,11 @@ Ninja-Property-Options globalmultiselect
 # 74a6ffda-708e-435a-86e3-40b67c4f981a=Option1
 # f1ba449c-fd34-49df-b878-af3877180d17=Option3
 
-# Find option GUID by option name
-Ninja-Property-Options globalmultiselect | grep "Option 1" | awk -F= '{print $1}'
-# Output: 74a6ffda-708e-435a-86e3-40b67c4f981a
+# Find option GUID by option name (PowerShell-native; `options` returns GUID=Name lines)
+$guid = Ninja-Property-Options globalmultiselect |
+    Where-Object { ($_ -split '=', 2)[1] -eq 'Option1' } |
+    ForEach-Object { ($_ -split '=', 2)[0] }
+# $guid: 74a6ffda-708e-435a-86e3-40b67c4f981a
 
 # Set multiple values (comma-separated)
 Ninja-Property-Set globalmultiselect 333f541e-747e-4a1e-a2e2-a82c1c2f2008,74a6ffda-708e-435a-86e3-40b67c4f981a
@@ -590,7 +596,7 @@ Ninja-Property-Set globalsecure sampletext2
 ```
 
 **Security Best Practices:**
-```
+
 For Windows (Batch):
 ```batch
 @echo off

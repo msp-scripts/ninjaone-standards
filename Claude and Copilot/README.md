@@ -12,6 +12,8 @@ This repository adds NinjaOne RMM platform knowledge to **GitHub Copilot** and *
     ninjaone-scripting-guidelines.instructions.md   # Auto-applied to *.ps1 files (Copilot)
 
 .claude/
+  agents/
+    ninjaone-expert.md                              # All-domains expert agent (Claude Code)
   skills/
     ninjaone-api/SKILL.md                           # REST API v2
     ninjaone-environment-variables/SKILL.md         # $env:NINJA_* variables
@@ -20,8 +22,6 @@ This repository adds NinjaOne RMM platform knowledge to **GitHub Copilot** and *
     ninjaone-cli/SKILL.md                           # ninjarmm-cli and legacy cmdlets
     ninjaone-wysiwyg/SKILL.md                       # HTML/CSS for WYSIWYG fields
     ninjaone-tags/SKILL.md                          # Device tagging
-    agents/
-      ninjaone-expert.md                            # All-domains expert agent (Claude Code)
 
 CLAUDE.md                                           # Claude Code project instructions
 ```

@@ -29,16 +29,20 @@ $headers = @{ Authorization = "Bearer $($token.access_token)"; Accept = "applica
 
 Tokens expire ~1 hour. Never hardcode credentials — use environment variables or a secrets vault.
 
-### Pagination (Cursor-Based)
+### Pagination (`pageSize` + `after` node ID)
+
+List endpoints return a **bare JSON array** — there is no `next` link in the body. Page by
+passing the last item's `id` as `after`, and stop when a page returns fewer than `pageSize`.
 
 ```powershell
-$cursor = $null
+$pageSize = 100
+$after    = 0
 do {
-    $url = "$baseUrl/devices?pageSize=100$(if ($cursor) { "&after=$cursor" })"
-    $response = Invoke-RestMethod -Uri $url -Headers $headers
-    # process $response ...
-    $cursor = if ($response.PSObject.Properties['next'] -and $response.next -match 'after=([^&]+)') { $matches[1] } else { $null }
-} while ($cursor)
+    $page = @(Invoke-RestMethod -Uri "$baseUrl/devices?pageSize=$pageSize&after=$after" -Headers $headers)
+    if ($page.Count -eq 0) { break }
+    # process $page ...
+    $after = $page[-1].id
+} while ($page.Count -eq $pageSize)
 ```
 
 ### Device Filters (`df` Parameter)
@@ -163,7 +167,8 @@ try {
         403 { Write-Error "Forbidden: check API scopes (monitoring, management, control)" }
         404 { Write-Error "Not Found: verify resource ID" }
         429 {
-            $wait = [int]($_.Exception.Response.Headers['Retry-After'] ?? [math]::Pow(2, $attempt))
+            $retryAfter = $_.Exception.Response.Headers['Retry-After']
+            if ($retryAfter) { $wait = [int]$retryAfter } else { $wait = [math]::Pow(2, $attempt) }
             Write-Warning "Rate limited. Waiting $wait seconds..."
             Start-Sleep -Seconds $wait
         }
@@ -379,7 +384,8 @@ function ConvertTo-TypedValue {
     )
     process {
         if ([string]::IsNullOrWhiteSpace($Value)) {
-            return $PSBoundParameters.ContainsKey('DefaultValue') ? $DefaultValue : $null
+            if ($PSBoundParameters.ContainsKey('DefaultValue')) { return $DefaultValue }
+            return $null
         }
         try {
             $converted = switch ($Type) {
@@ -398,7 +404,8 @@ function ConvertTo-TypedValue {
             return $converted
         } catch {
             Write-Warning "Failed to convert '$Value' to $Type. Using default."
-            return $PSBoundParameters.ContainsKey('DefaultValue') ? $DefaultValue : $null
+            if ($PSBoundParameters.ContainsKey('DefaultValue')) { return $DefaultValue }
+            return $null
         }
     }
 }
@@ -700,7 +707,8 @@ When answering NinjaOne questions:
 
 ## Persistent Agent Memory
 
-You have a persistent memory directory at `D:\Claude\.claude\agent-memory-local\ninjaone-expert\`. Its contents persist across conversations.
+You have a persistent memory directory at `.claude/agent-memory-local/ninjaone-expert/`
+(relative to the repository root). Its contents persist across conversations.
 
 Consult memory files before answering to build on previous discoveries. Use the Write and Edit tools to update memory files.
 

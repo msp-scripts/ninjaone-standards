@@ -157,8 +157,11 @@ $tokenResponse = Invoke-RestMethod -Method Post -Uri "$baseUrl/ws/oauth/token" `
 $accessToken = $tokenResponse.access_token
 ```
 
-Reference implementation with full error handling, PKCE, and a reusable `-OAuthPathPrefix`
-fallback: [Get-NinjaInteractiveOAuthToken.ps1](../../../../NinjaOne/API/Get-NinjaInteractiveOAuthToken.ps1).
+A hardened reference implementation of this flow should wrap the above with: full error
+handling on the listener and token exchange, `state` verification before using the `code`,
+a browser-facing HTML response written back to `$context.Response`, and a reusable
+`-OAuthPathPrefix` parameter so the `/ws/oauth` vs `/oauth` fallback (see below) can be
+switched without editing the script.
 
 **Known gotchas (confirmed against a live tenant, 2026-07-31):**
 
@@ -184,32 +187,25 @@ fallback: [Get-NinjaInteractiveOAuthToken.ps1](../../../../NinjaOne/API/Get-Ninj
 
 ### Pagination
 
-Most list endpoints support cursor-based pagination:
+List endpoints page with `pageSize` + `after`, where **`after` is the last node ID from the
+previous page** — the response is a bare JSON array with no `next` link, so there is no
+cursor to extract from the body:
 
 ```powershell
 # Get all devices with pagination
-$baseUrl = "https://{instance}.ninjarmm.com/api/v2"
-$allDevices = @()
-$cursor = $null
+$baseUrl    = "https://{instance}.ninjarmm.com/api/v2"
+$pageSize   = 100
+$allDevices = [System.Collections.Generic.List[object]]::new()
+$after      = 0
 
 do {
-    $url = "$baseUrl/devices?pageSize=100"
-    if ($cursor) {
-        $url += "&after=$cursor"
-    }
-    
-    $response = Invoke-RestMethod -Uri $url -Headers $headers
-    $allDevices += $response
-    
-    # Extract cursor from next page link
-    if ($response.PSObject.Properties['next']) {
-        $cursor = [System.Web.HttpUtility]::ParseQueryString(
-            ([uri]$response.next).Query
-        )['after']
-    } else {
-        $cursor = $null
-    }
-} while ($cursor)
+    $page = @(Invoke-RestMethod -Uri "$baseUrl/devices?pageSize=$pageSize&after=$after" -Headers $headers)
+
+    if ($page.Count -eq 0) { break }
+
+    $allDevices.AddRange($page)
+    $after = $page[-1].id
+} while ($page.Count -eq $pageSize)
 ```
 
 ### Filtering
@@ -321,7 +317,7 @@ try {
         404 { Write-Error "Not Found: Resource does not exist" }
         429 { Write-Error "Rate Limited: Retry after $($_.Exception.Response.Headers['Retry-After']) seconds" }
         500 { Write-Error "Server Error: $($errorBody.message)" }
-        default { Write-Error "HTTP $statusCode: $($errorBody.message)" }
+        default { Write-Error "HTTP ${statusCode}: $($errorBody.message)" }
     }
     throw
 }
@@ -383,13 +379,13 @@ Invoke-RestMethod -Uri "$baseUrl/devices/approval/APPROVE" -Headers $headers -Me
 # Get device custom fields
 $fields = Invoke-RestMethod -Uri "$baseUrl/device/$deviceId/custom-fields" -Headers $headers
 
-# Update custom field value
-$update = @{
+# Update custom field value (body is an ARRAY of {name, value} objects)
+$update = @(
     @{
         name = "FieldName"
         value = "New Value"
     }
-}
+)
 Invoke-RestMethod -Uri "$baseUrl/device/$deviceId/custom-fields" -Headers $headers -Method Patch -Body ($update | ConvertTo-Json) -ContentType "application/json"
 
 # Get organization custom fields
@@ -646,7 +642,6 @@ foreach ($alert in $alerts) {
 ## References
 
 - [NinjaOne API Documentation](https://app.ninjarmm.com/apidocs-v2/core-resources)
-- [OpenAPI Specification](./references/api-specification.md)
 - [Device Filter Reference](./references/device-filters.md)
 - [Advanced Examples](./references/api-examples.md)
 - Related Skills:

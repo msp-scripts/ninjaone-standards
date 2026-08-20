@@ -2,6 +2,9 @@
 
 ## Advanced Pagination Pattern
 
+`/v2/devices` returns a bare JSON array with no `next` link. Page by passing the last
+device's `id` as the `after` query parameter, and stop when a page comes back short.
+
 ```powershell
 function Get-AllNinjaDevices {
     [CmdletBinding()]
@@ -16,36 +19,23 @@ function Get-AllNinjaDevices {
     )
 
     $allResults = [System.Collections.ArrayList]::new()
-    $cursor = $null
+    $after = 0
 
     do {
-        $url = "$BaseUrl/devices?pageSize=$PageSize"
-        if ($cursor) {
-            $url += "&after=$cursor"
-        }
+        $url = "$BaseUrl/devices?pageSize=$PageSize&after=$after"
 
         try {
-            $response = Invoke-RestMethod -Uri $url -Headers $Headers
+            $page = @(Invoke-RestMethod -Uri $url -Headers $Headers)
 
-            if ($response -is [array]) {
-                $allResults.AddRange($response)
-            } else {
-                [void]$allResults.Add($response)
-            }
+            if ($page.Count -eq 0) { break }
 
-            # Extract next cursor
-            $cursor = $null
-            if ($response.PSObject.Properties['next']) {
-                $nextUrl = $response.next
-                if ($nextUrl -match 'after=([^&]+)') {
-                    $cursor = $matches[1]
-                }
-            }
+            $allResults.AddRange($page)
+            $after = $page[-1].id
         } catch {
             Write-Error "Failed to retrieve devices: $_"
             throw
         }
-    } while ($cursor)
+    } while ($page.Count -eq $PageSize)
 
     return $allResults.ToArray()
 }
@@ -262,28 +252,18 @@ function Search-Devices {
 
     $encoded = [System.Web.HttpUtility]::UrlEncode($SearchTerm)
     $allResults = [System.Collections.ArrayList]::new()
-    $cursor = $null
+    $after = 0
 
     do {
-        $url = "$BaseUrl/devices?df=search=$encoded&pageSize=$PageSize"
-        if ($cursor) {
-            $url += "&after=$cursor"
-        }
+        $url = "$BaseUrl/devices?df=search=$encoded&pageSize=$PageSize&after=$after"
 
-        $response = Invoke-RestMethod -Uri $url -Headers $Headers
+        $page = @(Invoke-RestMethod -Uri $url -Headers $Headers)
 
-        if ($response) {
-            [void]$allResults.AddRange(@($response))
-        }
+        if ($page.Count -eq 0) { break }
 
-        $cursor = $null
-        if ($response.PSObject.Properties['next']) {
-            $nextUrl = $response.next
-            if ($nextUrl -match 'after=([^&]+)') {
-                $cursor = $matches[1]
-            }
-        }
-    } while ($cursor)
+        $allResults.AddRange($page)
+        $after = $page[-1].id
+    } while ($page.Count -eq $PageSize)
 
     return $allResults.ToArray()
 }
