@@ -179,7 +179,7 @@ $table = @"
 
 ```powershell
 # Informational (default — no modifier class)
-$info = @"
+$infoCard = @"
 <div class="info-card">
   <i class="info-icon fa-solid fa-circle-info"></i>
   <div class="info-text">
@@ -190,7 +190,7 @@ $info = @"
 "@
 
 # Success
-$success = @"
+$successCard = @"
 <div class="info-card success">
   <i class="info-icon fa-solid fa-circle-check"></i>
   <div class="info-text">
@@ -200,8 +200,8 @@ $success = @"
 </div>
 "@
 
-# Error
-$error = @"
+# Error ($error is a PowerShell automatic variable — never assign to it)
+$errorCard = @"
 <div class="info-card error">
   <i class="info-icon fa-solid fa-circle-exclamation"></i>
   <div class="info-text">
@@ -212,7 +212,7 @@ $error = @"
 "@
 
 # Warning
-$warning = @"
+$warningCard = @"
 <div class="info-card warning">
   <i class="info-icon fa-solid fa-triangle-exclamation"></i>
   <div class="info-text">
@@ -317,7 +317,7 @@ $columnChart = @"
     <tr><td style="--size: 0.75"><span class="data">75%</span></td></tr>
   </tbody>
 </table>
-"@"
+"@
 ```
 
 ### Bar Chart
@@ -330,7 +330,7 @@ $barChart = @"
     <tr><td style="--size: 0.6"><span class="data">60%</span></td></tr>
   </tbody>
 </table>
-"@"
+"@
 ```
 
 ### Pie Chart
@@ -345,7 +345,7 @@ $pieChart = @"
     </tbody>
   </table>
 </div>
-"@"
+"@
 ```
 
 ### Line Chart
@@ -395,7 +395,7 @@ $areaChart = @"
     </tr>
   </tbody>
 </table>
-"@"
+"@
 ```
 
 ### Chart Modifiers
@@ -441,7 +441,7 @@ $html = @"
     <div class="col">Column 3</div>
   </div>
 </div>
-"@"
+"@
 
 # Responsive: stacked mobile, horizontal tablet+
 $html = @"
@@ -451,7 +451,7 @@ $html = @"
     <div class="col-sm-4">Sidebar</div>
   </div>
 </div>
-"@"
+"@
 
 # Mixed breakpoints
 $html = @"
@@ -459,7 +459,7 @@ $html = @"
   <div class="col-6 col-md-4">Responsive column</div>
   <div class="col-6 col-md-8">Another column</div>
 </div>
-"@"
+"@
 ```
 
 ### Row Columns
@@ -477,7 +477,7 @@ $html = @"
     <div class="col">Column</div>
   </div>
 </div>
-"@"
+"@
 
 # Responsive columns: 1 on mobile, 2 on small, 4 on medium+
 $html = @"
@@ -487,7 +487,7 @@ $html = @"
   <div class="col">Column</div>
   <div class="col">Column</div>
 </div>
-"@"
+"@
 
 # Auto-width columns
 $html = @"
@@ -496,7 +496,7 @@ $html = @"
   <div class="col">Column</div>
   <div class="col">Column</div>
 </div>
-"@"
+"@
 ```
 
 ### Nesting
@@ -513,23 +513,23 @@ $html = @"
     </div>
   </div>
 </div>
-"@"
+"@
 ```
 
 ### Gutters
 
 ```powershell
 # No gutters
-$html = @"<div class="row g-0"><div class="col">No spacing</div></div>"@"
+$html = '<div class="row g-0"><div class="col">No spacing</div></div>'
 
 # Custom gutters
-$html = @"<div class="row g-3"><div class="col">3 spacing</div></div>"@"
+$html = '<div class="row g-3"><div class="col">3 spacing</div></div>'
 
 # Horizontal only
-$html = @"<div class="row gx-5"><div class="col">Horizontal spacing</div></div>"@"
+$html = '<div class="row gx-5"><div class="col">Horizontal spacing</div></div>'
 
 # Vertical only
-$html = @"<div class="row gy-3"><div class="col">Vertical spacing</div></div>"@"
+$html = '<div class="row gy-3"><div class="col">Vertical spacing</div></div>'
 ```
 
 ### Additional Grid Utilities
@@ -557,7 +557,7 @@ $html = @"
 <div class="card">
   <div class="card-body">Large content here...</div>
 </div>
-"@"
+"@
 
 # Pipe to NinjaOne field
 $html | Ninja-Property-Set-Piped "FieldName"
